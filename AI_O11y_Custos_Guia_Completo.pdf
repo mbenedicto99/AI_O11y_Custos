@@ -1,0 +1,1142 @@
+%PDF-1.4
+%âãÏÓ
+1 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Courier >>
+endobj
+2 0 obj
+<< /Length 2817 >>
+stream
+BT
+/F1 9 Tf
+1 0 0 1 42 750 Tm
+12 TL
+(AI_O11y_Custos - Guia Completo \(Passo a passo + Códigos\) - v2) Tj
+T*
+() Tj
+T*
+(Objetivo: colocar o projeto AI_O11y_Custos de pé do zero, com repositório GitHub, Jobs ) Tj
+T*
+(no Databricks,) Tj
+T*
+(ingestão de custos da Azure e **infraestrutura 100% automatizada com Terraform**.) Tj
+T*
+() Tj
+T*
+(======================================================================) Tj
+T*
+(0\) PRÉ-REQUISITOS) Tj
+T*
+(- Conta no Azure \(assinatura ativa\).) Tj
+T*
+(- Conta no GitHub.) Tj
+T*
+(- Um Workspace do Azure Databricks \(ou deixe o Terraform criar opcionalmente\).) Tj
+T*
+(- \(Opcional local\) Git + Python 3.11.) Tj
+T*
+() Tj
+T*
+(======================================================================) Tj
+T*
+(1\) SUBIR O CÓDIGO PARA O GITHUB) Tj
+T*
+(Opção GUI:) Tj
+T*
+(  1. Baixe o pacote do projeto \(ZIP\) e descompacte.) Tj
+T*
+(  2. GitHub -> New repository -> nome: AI_O11y_Custos -> Create.) Tj
+T*
+(  3. Code -> Upload files -> suba as PASTAS/ARQUIVOS \(branch main\).) Tj
+T*
+() Tj
+T*
+(Opção Terminal:) Tj
+T*
+(  git clone https://github.com/<org>/AI_O11y_Custos.git) Tj
+T*
+(  cd AI_O11y_Custos) Tj
+T*
+(  git add . && git commit -m "init: AI_O11y_Custos skeleton" && git push) Tj
+T*
+() Tj
+T*
+(======================================================================) Tj
+T*
+(2\) GITHUB SECRETS \(AZURE + DATABRICKS\)) Tj
+T*
+() Tj
+T*
+(2.1 AZURE_CREDENTIALS \(Service Principal\)) Tj
+T*
+(  az login) Tj
+T*
+(  az account set --subscription <SUBSCRIPTION_ID>) Tj
+T*
+(  az ad sp create-for-rbac \\) Tj
+T*
+(    --name "gh-ai-o11y-custos" \\) Tj
+T*
+(    --role contributor \\) Tj
+T*
+(    --scopes /subscriptions/<SUBSCRIPTION_ID> \\) Tj
+T*
+(    --sdk-auth) Tj
+T*
+(  -> Copie o JSON de saída para o secret: AZURE_CREDENTIALS) Tj
+T*
+() Tj
+T*
+(2.2 DATABRICKS_HOST / DATABRICKS_TOKEN) Tj
+T*
+(  - Launch Workspace \(Azure Databricks\) -> copie a URL \(HOST\)) Tj
+T*
+(  - User Settings -> Developer -> Access tokens -> Generate \(TOKEN\)) Tj
+T*
+(  -> Crie secrets: DATABRICKS_HOST e DATABRICKS_TOKEN) Tj
+T*
+() Tj
+T*
+(======================================================================) Tj
+T*
+(3\) GITHUB ACTIONS \(PIPELINES\)) Tj
+T*
+(- Faça um commit simples \(README, por exemplo\).) Tj
+T*
+(- Pipelines:) Tj
+T*
+(  - ci                : checagens Python) Tj
+T*
+(  - deploy-databricks : cria/atualiza Repo/Job) Tj
+T*
+(  - deploy-infra      : \(se você mexer em infra/**\) aplica Terraform) Tj
+T*
+(  - deploy-functions  : publica a Azure Function \(Timer\)) Tj
+T*
+() Tj
+T*
+(======================================================================) Tj
+T*
+(4\) PRIMEIRO JOB \(DATABRICKS\)) Tj
+T*
+(- Workflows -> Jobs -> AI_O11y_Custos-train-daily -> Run now.) Tj
+T*
+(- Ver métricas em MLflow \(execução\).) Tj
+T*
+() Tj
+T*
+(======================================================================) Tj
+ET
+endstream
+endobj
+3 0 obj
+<< /Type /Page /Parent 20 0 R /Resources << /Font << /F1 1 0 R >> >> /MediaBox [0 0 612 792] /Contents 2 0 R >>
+endobj
+4 0 obj
+<< /Length 2865 >>
+stream
+BT
+/F1 9 Tf
+1 0 0 1 42 750 Tm
+12 TL
+(FASE 2 - DADOS REAIS \(CUSTOS AZURE\)) Tj
+T*
+(5\) ADLS GEN2 \(Storage\) e permissões) Tj
+T*
+(- Crie Storage Account com Hierarchical namespace = Enabled.) Tj
+T*
+(- Conceda ao Service Principal: Storage Blob Data Reader \(IAM\).) Tj
+T*
+() Tj
+T*
+(6\) COST MANAGEMENT EXPORT \(diário -> ADLS\)) Tj
+T*
+(- Cost Management -> Exports -> Add) Tj
+T*
+(  - Scope: Subscription | Recurrence: Daily | Format: CSV) Tj
+T*
+(  - Storage: o ADLS acima \(container/pasta\)) Tj
+T*
+(- Run now para gerar o primeiro CSV.) Tj
+T*
+() Tj
+T*
+(7\) FUNCTION APP \(timer\) - opcional no início) Tj
+T*
+(- Function App \(Linux, Python 3.11, plano Consumption\).) Tj
+T*
+(- App Settings: COSTS_ACCOUNT_NAME, COSTS_CONTAINER, COSTS_PATH_PREFIX.) Tj
+T*
+(- O workflow deploy-functions publica o código do timer.) Tj
+T*
+() Tj
+T*
+(======================================================================) Tj
+T*
+(FASE 3 - ALERTAS & PAINEL) Tj
+T*
+(- Log Analytics + KQL \(exemplo\):) Tj
+T*
+(  AI_O11y_Custos_CL) Tj
+T*
+(  | summarize avg\(risk_score_d\) by bin\(TimeGenerated, 1d\), scope_s) Tj
+T*
+(  | order by TimeGenerated desc) Tj
+T*
+(- Azure Monitor Alerts \(condição ex.: avg\(risk_score_d\) > 70\).) Tj
+T*
+(- Grafana/Power BI lendo de Log Analytics/Storage.) Tj
+T*
+() Tj
+T*
+(======================================================================) Tj
+T*
+(NOVIDADE - INFRAESTRUTURA AUTOMATIZADA \(TERRAFORM\)) Tj
+T*
+(Como aplicar \(exemplo simples\):) Tj
+T*
+(  cd infra) Tj
+T*
+(  terraform init) Tj
+T*
+(  terraform apply -auto-approve -var="prefix=aio11y" -var="location=brazilsouth") Tj
+T*
+() Tj
+T*
+(Opções:) Tj
+T*
+(  -var="create_databricks=true"          # cria workspace Databricks) Tj
+T*
+(  -var="create_cost_export=true"         # cria Export de Custos diário) Tj
+T*
+(  -var="enable_function_diagnostics=true"# envia logs da Function para Log Analytics) Tj
+T*
+() Tj
+T*
+(Exemplo completo:) Tj
+T*
+(  terraform apply -auto-approve \\) Tj
+T*
+(    -var="prefix=aio11y" \\) Tj
+T*
+(    -var="location=brazilsouth" \\) Tj
+T*
+(    -var="create_databricks=true" \\) Tj
+T*
+(    -var="create_cost_export=true" \\) Tj
+T*
+(    -var="enable_function_diagnostics=true") Tj
+T*
+() Tj
+T*
+(O que o Terraform cria:) Tj
+T*
+(- Resource Group) Tj
+T*
+(- Storage \(ADLS Gen2\) + container cost-exports) Tj
+T*
+(- Log Analytics + Application Insights \(workspace-based\)) Tj
+T*
+(- Service Plan \(Linux Y1\) + Function App \(Python 3.11\) com identidade gerenciada) Tj
+T*
+(- RBAC: Function -> Storage Blob Data Reader) Tj
+T*
+(- Diagnostic Settings do Storage -> Log Analytics) Tj
+T*
+(- \(Opcional\) Workspace Databricks) Tj
+T*
+(- \(Opcional\) Export de Custos diário para o ADLS) Tj
+T*
+() Tj
+T*
+(======================================================================) Tj
+T*
+(CHECKLIST RÁPIDO) Tj
+T*
+(- Actions "deploy-functions" falhando? Crie o Function App antes ou ajuste o nome.) Tj
+ET
+endstream
+endobj
+5 0 obj
+<< /Type /Page /Parent 20 0 R /Resources << /Font << /F1 1 0 R >> >> /MediaBox [0 0 612 792] /Contents 4 0 R >>
+endobj
+6 0 obj
+<< /Length 1766 >>
+stream
+BT
+/F1 9 Tf
+1 0 0 1 42 750 Tm
+12 TL
+(- Sem dados? Verifique export, permissões IAM e caminho do container/prefixo.) Tj
+T*
+(- Databricks sem job? Confirme DATABRICKS_HOST/TOKEN e reexecute "deploy-databricks".) Tj
+T*
+() Tj
+T*
+(======================================================================) Tj
+T*
+(ANEXO - ARQUIVOS DO PROJETO \(CÓDIGOS COMPLETOS\)) Tj
+T*
+(A seguir, o conteúdo dos principais arquivos.) Tj
+T*
+() Tj
+T*
+() Tj
+T*
+() Tj
+T*
+(===== ARQUIVO: README.md =====) Tj
+T*
+(\(arquivo não encontrado\)) Tj
+T*
+() Tj
+T*
+(===== ARQUIVO: .gitignore =====) Tj
+T*
+(\(arquivo não encontrado\)) Tj
+T*
+() Tj
+T*
+(===== ARQUIVO: requirements.txt =====) Tj
+T*
+(\(arquivo não encontrado\)) Tj
+T*
+() Tj
+T*
+(===== ARQUIVO: pyproject.toml =====) Tj
+T*
+(\(arquivo não encontrado\)) Tj
+T*
+() Tj
+T*
+(===== ARQUIVO: infra/providers.tf =====) Tj
+T*
+(terraform {) Tj
+T*
+(  required_version = ">= 1.6.0") Tj
+T*
+(  required_providers {) Tj
+T*
+(    azurerm = {) Tj
+T*
+(      source  = "hashicorp/azurerm") Tj
+T*
+(      version = "~> 3.113") Tj
+T*
+(    }) Tj
+T*
+(    random = {) Tj
+T*
+(      source  = "hashicorp/random") Tj
+T*
+(      version = "~> 3.6") Tj
+T*
+(    }) Tj
+T*
+(  }) Tj
+T*
+(}) Tj
+T*
+() Tj
+T*
+(provider "azurerm" {) Tj
+T*
+(  features {}) Tj
+T*
+(}) Tj
+T*
+() Tj
+T*
+(data "azurerm_client_config" "current" {}) Tj
+T*
+() Tj
+T*
+() Tj
+T*
+(===== ARQUIVO: infra/variables.tf =====) Tj
+T*
+(variable "prefix" {) Tj
+T*
+(  description = "Prefixo curto para nomear recursos") Tj
+T*
+(  type        = string) Tj
+T*
+(  default     = "aio11y") Tj
+T*
+(}) Tj
+T*
+() Tj
+T*
+(variable "location" {) Tj
+T*
+(  description = "Região Azure") Tj
+T*
+(  type        = string) Tj
+T*
+(  default     = "brazilsouth") Tj
+T*
+(}) Tj
+T*
+() Tj
+T*
+(variable "tags" {) Tj
+T*
+(  description = "Tags padrão") Tj
+ET
+endstream
+endobj
+7 0 obj
+<< /Type /Page /Parent 20 0 R /Resources << /Font << /F1 1 0 R >> >> /MediaBox [0 0 612 792] /Contents 6 0 R >>
+endobj
+8 0 obj
+<< /Length 2034 >>
+stream
+BT
+/F1 9 Tf
+1 0 0 1 42 750 Tm
+12 TL
+(  type        = map\(string\)) Tj
+T*
+(  default = {) Tj
+T*
+(    project = "AI_O11y_Custos") Tj
+T*
+(    owner   = "FinOps-SRE") Tj
+T*
+(  }) Tj
+T*
+(}) Tj
+T*
+() Tj
+T*
+(variable "create_databricks" {) Tj
+T*
+(  description = "Cria workspace Databricks \(opcional\)") Tj
+T*
+(  type        = bool) Tj
+T*
+(  default     = false) Tj
+T*
+(}) Tj
+T*
+() Tj
+T*
+(variable "create_cost_export" {) Tj
+T*
+(  description = "Cria Export diário do Cost Management \(requer permissões\)") Tj
+T*
+(  type        = bool) Tj
+T*
+(  default     = false) Tj
+T*
+(}) Tj
+T*
+() Tj
+T*
+(variable "enable_function_diagnostics" {) Tj
+T*
+(  description = "Ativa diagnósticos do Function App para Log Analytics") Tj
+T*
+(  type        = bool) Tj
+T*
+(  default     = false) Tj
+T*
+(}) Tj
+T*
+() Tj
+T*
+() Tj
+T*
+(===== ARQUIVO: infra/resource_group.tf =====) Tj
+T*
+(resource "azurerm_resource_group" "rg" {) Tj
+T*
+(  name     = "${var.prefix}-rg") Tj
+T*
+(  location = var.location) Tj
+T*
+(  tags     = var.tags) Tj
+T*
+(}) Tj
+T*
+() Tj
+T*
+() Tj
+T*
+(===== ARQUIVO: infra/storage.tf =====) Tj
+T*
+(resource "random_string" "suf" {) Tj
+T*
+(  length  = 5) Tj
+T*
+(  upper   = false) Tj
+T*
+(  lower   = true) Tj
+T*
+(  number  = true) Tj
+T*
+(  special = false) Tj
+T*
+(}) Tj
+T*
+() Tj
+T*
+(resource "azurerm_storage_account" "sa" {) Tj
+T*
+(  name                            = "${replace\(var.prefix, "-", ) Tj
+T*
+(  ""\)}${random_string.suf.result}sa") Tj
+T*
+(  resource_group_name             = azurerm_resource_group.rg.name) Tj
+T*
+(  location                        = azurerm_resource_group.rg.location) Tj
+T*
+(  account_tier                    = "Standard") Tj
+T*
+(  account_replication_type        = "LRS") Tj
+T*
+(  min_tls_version                 = "TLS1_2") Tj
+T*
+(  allow_blob_public_access        = false) Tj
+T*
+(  enable_https_traffic_only       = true) Tj
+T*
+(  is_hns_enabled                  = true # ADLS Gen2) Tj
+T*
+(  tags                            = var.tags) Tj
+T*
+(}) Tj
+T*
+() Tj
+T*
+(resource "azurerm_storage_container" "cost" {) Tj
+ET
+endstream
+endobj
+9 0 obj
+<< /Type /Page /Parent 20 0 R /Resources << /Font << /F1 1 0 R >> >> /MediaBox [0 0 612 792] /Contents 8 0 R >>
+endobj
+10 0 obj
+<< /Length 2346 >>
+stream
+BT
+/F1 9 Tf
+1 0 0 1 42 750 Tm
+12 TL
+(  name                  = "cost-exports") Tj
+T*
+(  storage_account_name  = azurerm_storage_account.sa.name) Tj
+T*
+(  container_access_type = "private") Tj
+T*
+(}) Tj
+T*
+() Tj
+T*
+() Tj
+T*
+(===== ARQUIVO: infra/log_analytics.tf =====) Tj
+T*
+(resource "azurerm_log_analytics_workspace" "law" {) Tj
+T*
+(  name                = "${var.prefix}-law") Tj
+T*
+(  location            = azurerm_resource_group.rg.location) Tj
+T*
+(  resource_group_name = azurerm_resource_group.rg.name) Tj
+T*
+(  sku                 = "PerGB2018") Tj
+T*
+(  retention_in_days   = 30) Tj
+T*
+(  tags                = var.tags) Tj
+T*
+(}) Tj
+T*
+() Tj
+T*
+(resource "azurerm_application_insights" "appi" {) Tj
+T*
+(  name                = "${var.prefix}-appi") Tj
+T*
+(  location            = azurerm_resource_group.rg.location) Tj
+T*
+(  resource_group_name = azurerm_resource_group.rg.name) Tj
+T*
+(  application_type    = "web") Tj
+T*
+(  workspace_id        = azurerm_log_analytics_workspace.law.id) Tj
+T*
+(  tags                = var.tags) Tj
+T*
+(}) Tj
+T*
+() Tj
+T*
+() Tj
+T*
+(===== ARQUIVO: infra/function.tf =====) Tj
+T*
+(resource "azurerm_service_plan" "plan" {) Tj
+T*
+(  name                = "${var.prefix}-plan") Tj
+T*
+(  location            = azurerm_resource_group.rg.location) Tj
+T*
+(  resource_group_name = azurerm_resource_group.rg.name) Tj
+T*
+(  os_type             = "Linux") Tj
+T*
+(  sku_name            = "Y1" # Consumption) Tj
+T*
+(  tags                = var.tags) Tj
+T*
+(}) Tj
+T*
+() Tj
+T*
+(resource "azurerm_linux_function_app" "func" {) Tj
+T*
+(  name                       = "${var.prefix}-func") Tj
+T*
+(  location                   = azurerm_resource_group.rg.location) Tj
+T*
+(  resource_group_name        = azurerm_resource_group.rg.name) Tj
+T*
+(  service_plan_id            = azurerm_service_plan.plan.id) Tj
+T*
+() Tj
+T*
+(  # Armazenamento para conteúdos/funcionamento) Tj
+T*
+(  storage_account_name       = azurerm_storage_account.sa.name) Tj
+T*
+(  storage_account_access_key = azurerm_storage_account.sa.primary_access_key) Tj
+T*
+() Tj
+T*
+(  functions_extension_version = "~4") Tj
+T*
+() Tj
+T*
+(  identity {) Tj
+T*
+(    type = "SystemAssigned") Tj
+T*
+(  }) Tj
+T*
+() Tj
+T*
+(  site_config {) Tj
+T*
+(    application_stack {) Tj
+T*
+(      python_version = "3.11") Tj
+T*
+(    }) Tj
+T*
+(    ftps_state = "Disabled") Tj
+T*
+(  }) Tj
+ET
+endstream
+endobj
+11 0 obj
+<< /Type /Page /Parent 20 0 R /Resources << /Font << /F1 1 0 R >> >> /MediaBox [0 0 612 792] /Contents 10 0 R >>
+endobj
+12 0 obj
+<< /Length 2380 >>
+stream
+BT
+/F1 9 Tf
+1 0 0 1 42 750 Tm
+12 TL
+() Tj
+T*
+(  app_settings = {) Tj
+T*
+(    "WEBSITE_RUN_FROM_PACKAGE"         = "1") Tj
+T*
+(    "APPINSIGHTS_INSTRUMENTATIONKEY"   = ) Tj
+T*
+(    azurerm_application_insights.appi.instrumentation_key) Tj
+T*
+(    "APPLICATIONINSIGHTS_CONNECTION_STRING" = ) Tj
+T*
+(    azurerm_application_insights.appi.connection_string) Tj
+T*
+() Tj
+T*
+(    # Ajuste conforme sua leitura de custos) Tj
+T*
+(    "COSTS_ACCOUNT_NAME" = azurerm_storage_account.sa.name) Tj
+T*
+(    "COSTS_CONTAINER"    = azurerm_storage_container.cost.name) Tj
+T*
+(    "COSTS_PATH_PREFIX"  = "exports/") Tj
+T*
+(  }) Tj
+T*
+() Tj
+T*
+(  tags = var.tags) Tj
+T*
+(}) Tj
+T*
+() Tj
+T*
+(# Permissão para a Function ler blobs do Storage) Tj
+T*
+(resource "azurerm_role_assignment" "func_blob_reader" {) Tj
+T*
+(  scope                = azurerm_storage_account.sa.id) Tj
+T*
+(  role_definition_name = "Storage Blob Data Reader") Tj
+T*
+(  principal_id         = azurerm_linux_function_app.func.identity[0].principal_id) Tj
+T*
+(}) Tj
+T*
+() Tj
+T*
+() Tj
+T*
+(===== ARQUIVO: infra/diagnostics.tf =====) Tj
+T*
+(# Logs do Storage -> Log Analytics \(útil para auditoria/monitoramento\)) Tj
+T*
+(resource "azurerm_monitor_diagnostic_setting" "sa_to_law" {) Tj
+T*
+(  name                       = "${var.prefix}-sa-diag") Tj
+T*
+(  target_resource_id         = azurerm_storage_account.sa.id) Tj
+T*
+(  log_analytics_workspace_id = azurerm_log_analytics_workspace.law.id) Tj
+T*
+() Tj
+T*
+(  enabled_log {) Tj
+T*
+(    category = "StorageRead") Tj
+T*
+(  }) Tj
+T*
+(  enabled_log {) Tj
+T*
+(    category = "StorageWrite") Tj
+T*
+(  }) Tj
+T*
+(  enabled_log {) Tj
+T*
+(    category = "StorageDelete") Tj
+T*
+(  }) Tj
+T*
+() Tj
+T*
+(  metric {) Tj
+T*
+(    category = "AllMetrics") Tj
+T*
+(    enabled  = true) Tj
+T*
+(  }) Tj
+T*
+(}) Tj
+T*
+() Tj
+T*
+(# \(Opcional\) Logs da Function App -> Log Analytics \(algumas categorias podem variar; ) Tj
+T*
+(deixe desativado se não tiver certeza\)) Tj
+T*
+(resource "azurerm_monitor_diagnostic_setting" "func_to_law" {) Tj
+T*
+(  count                      = var.enable_function_diagnostics ? 1 : 0) Tj
+T*
+(  name                       = "${var.prefix}-func-diag") Tj
+T*
+(  target_resource_id         = azurerm_linux_function_app.func.id) Tj
+T*
+(  log_analytics_workspace_id = azurerm_log_analytics_workspace.law.id) Tj
+T*
+() Tj
+T*
+(  enabled_log {) Tj
+T*
+(    category = "FunctionAppLogs") Tj
+ET
+endstream
+endobj
+13 0 obj
+<< /Type /Page /Parent 20 0 R /Resources << /Font << /F1 1 0 R >> >> /MediaBox [0 0 612 792] /Contents 12 0 R >>
+endobj
+14 0 obj
+<< /Length 2078 >>
+stream
+BT
+/F1 9 Tf
+1 0 0 1 42 750 Tm
+12 TL
+(  }) Tj
+T*
+(  metric {) Tj
+T*
+(    category = "AllMetrics") Tj
+T*
+(    enabled  = true) Tj
+T*
+(  }) Tj
+T*
+(}) Tj
+T*
+() Tj
+T*
+() Tj
+T*
+(===== ARQUIVO: infra/cost_export.tf =====) Tj
+T*
+(# Export diário do Azure Cost Management para o ADLS \(opcional\)) Tj
+T*
+(# ATENÇÃO: requer permissões específicas na assinatura para criar exports.) Tj
+T*
+(# Habilite com -var="create_cost_export=true") Tj
+T*
+(resource "azurerm_cost_management_export" "daily" {) Tj
+T*
+(  count = var.create_cost_export ? 1 : 0) Tj
+T*
+() Tj
+T*
+(  name  = "${var.prefix}-cost-export") Tj
+T*
+(  scope = "/subscriptions/${data.azurerm_client_config.current.subscription_id}") Tj
+T*
+() Tj
+T*
+(  recurrence = "Daily") Tj
+T*
+() Tj
+T*
+(  recurrence_period {) Tj
+T*
+(    from = "2025-09-01T00:00:00Z") Tj
+T*
+(    to   = "2030-01-01T00:00:00Z") Tj
+T*
+(  }) Tj
+T*
+() Tj
+T*
+(  delivery_info {) Tj
+T*
+(    destination {) Tj
+T*
+(      resource_id        = azurerm_storage_account.sa.id) Tj
+T*
+(      container          = azurerm_storage_container.cost.name) Tj
+T*
+(      root_folder_path   = "exports") Tj
+T*
+(    }) Tj
+T*
+(  }) Tj
+T*
+() Tj
+T*
+(  format = "Csv") Tj
+T*
+(  time_period {) Tj
+T*
+(    type = "BillingMonthToDate") Tj
+T*
+(  }) Tj
+T*
+(}) Tj
+T*
+() Tj
+T*
+() Tj
+T*
+(===== ARQUIVO: infra/databricks.tf =====) Tj
+T*
+(# Criação opcional de um workspace Databricks \(muitos ambientes já possuem um\)) Tj
+T*
+(resource "azurerm_databricks_workspace" "dbw" {) Tj
+T*
+(  count               = var.create_databricks ? 1 : 0) Tj
+T*
+(  name                = "${var.prefix}-dbw") Tj
+T*
+(  resource_group_name = azurerm_resource_group.rg.name) Tj
+T*
+(  location            = azurerm_resource_group.rg.location) Tj
+T*
+(  sku                 = "premium") Tj
+T*
+(  tags                = var.tags) Tj
+T*
+(}) Tj
+T*
+() Tj
+T*
+(output "databricks_workspace_url" {) Tj
+T*
+(  value       = try\(azurerm_databricks_workspace.dbw[0].workspace_url, null\)) Tj
+T*
+(  description = "URL do workspace Databricks \(se criado\)") Tj
+T*
+(}) Tj
+T*
+() Tj
+T*
+() Tj
+T*
+(===== ARQUIVO: infra/outputs.tf =====) Tj
+ET
+endstream
+endobj
+15 0 obj
+<< /Type /Page /Parent 20 0 R /Resources << /Font << /F1 1 0 R >> >> /MediaBox [0 0 612 792] /Contents 14 0 R >>
+endobj
+16 0 obj
+<< /Length 2060 >>
+stream
+BT
+/F1 9 Tf
+1 0 0 1 42 750 Tm
+12 TL
+(output "resource_group" {) Tj
+T*
+(  value = azurerm_resource_group.rg.name) Tj
+T*
+(}) Tj
+T*
+() Tj
+T*
+(output "storage_account_name" {) Tj
+T*
+(  value = azurerm_storage_account.sa.name) Tj
+T*
+(}) Tj
+T*
+() Tj
+T*
+(output "storage_container_cost_exports" {) Tj
+T*
+(  value = azurerm_storage_container.cost.name) Tj
+T*
+(}) Tj
+T*
+() Tj
+T*
+(output "function_app_name" {) Tj
+T*
+(  value = azurerm_linux_function_app.func.name) Tj
+T*
+(}) Tj
+T*
+() Tj
+T*
+(output "log_analytics_workspace_id" {) Tj
+T*
+(  value = azurerm_log_analytics_workspace.law.id) Tj
+T*
+(}) Tj
+T*
+() Tj
+T*
+(output "application_insights_connection_string" {) Tj
+T*
+(  value = azurerm_application_insights.appi.connection_string) Tj
+T*
+(}) Tj
+T*
+() Tj
+T*
+() Tj
+T*
+(===== ARQUIVO: infra/README_INFRA.md =====) Tj
+T*
+(# Infraestrutura - AI_O11y_Custos \(Terraform\)) Tj
+T*
+() Tj
+T*
+(## O que este IaC cria) Tj
+T*
+(- Resource Group) Tj
+T*
+(- Storage Account \(ADLS Gen2\) + Container `cost-exports`) Tj
+T*
+(- Log Analytics Workspace + Application Insights \(workspace-based\)) Tj
+T*
+(- Service Plan \(Linux, Consumption\) + Function App \(Python 3.11\) com identidade ) Tj
+T*
+(gerenciada) Tj
+T*
+(- RBAC: Function -> Storage Blob Data Reader) Tj
+T*
+(- Diagnósticos do Storage para Log Analytics) Tj
+T*
+(- \(Opcional\) Workspace Databricks) Tj
+T*
+(- \(Opcional\) Export Diário do Cost Management para o ADLS) Tj
+T*
+() Tj
+T*
+(## Como aplicar) Tj
+T*
+(```bash) Tj
+T*
+(cd infra) Tj
+T*
+(terraform init) Tj
+T*
+(terraform apply -auto-approve) Tj
+T*
+(```) Tj
+T*
+() Tj
+T*
+(### Opções úteis) Tj
+T*
+(- Criar Databricks: `-var="create_databricks=true"`) Tj
+T*
+(- Criar Export de Custos: `-var="create_cost_export=true"`) Tj
+T*
+(- Ativar diagnostics da Function: `-var="enable_function_diagnostics=true"`) Tj
+T*
+() Tj
+T*
+(Exemplo completo:) Tj
+T*
+(```bash) Tj
+T*
+(terraform apply -auto-approve       -var="prefix=aio11y"       ) Tj
+T*
+(-var="location=brazilsouth"       -var="create_cost_export=true"       ) Tj
+T*
+(-var="enable_function_diagnostics=true") Tj
+T*
+(```) Tj
+T*
+() Tj
+ET
+endstream
+endobj
+17 0 obj
+<< /Type /Page /Parent 20 0 R /Resources << /Font << /F1 1 0 R >> >> /MediaBox [0 0 612 792] /Contents 16 0 R >>
+endobj
+18 0 obj
+<< /Length 1302 >>
+stream
+BT
+/F1 9 Tf
+1 0 0 1 42 750 Tm
+12 TL
+(> Dica: o workflow GitHub Actions `.github/workflows/deploy-infra.yml` já roda ) Tj
+T*
+(`terraform init/validate/apply` automaticamente ao modificar arquivos em `infra/**`.) Tj
+T*
+() Tj
+T*
+() Tj
+T*
+(===== ARQUIVO: jobs/train_job.json =====) Tj
+T*
+(\(arquivo não encontrado\)) Tj
+T*
+() Tj
+T*
+(===== ARQUIVO: notebooks/train_forecast.py =====) Tj
+T*
+(\(arquivo não encontrado\)) Tj
+T*
+() Tj
+T*
+(===== ARQUIVO: src/ai_o11y_custos/__init__.py =====) Tj
+T*
+(\(arquivo não encontrado\)) Tj
+T*
+() Tj
+T*
+(===== ARQUIVO: src/ai_o11y_custos/pipeline.py =====) Tj
+T*
+(\(arquivo não encontrado\)) Tj
+T*
+() Tj
+T*
+(===== ARQUIVO: src/ai_o11y_custos/scoring_function/__init__.py =====) Tj
+T*
+(\(arquivo não encontrado\)) Tj
+T*
+() Tj
+T*
+(===== ARQUIVO: src/ai_o11y_custos/scoring_function/function.json =====) Tj
+T*
+(\(arquivo não encontrado\)) Tj
+T*
+() Tj
+T*
+(===== ARQUIVO: .github/workflows/ci.yml =====) Tj
+T*
+(\(arquivo não encontrado\)) Tj
+T*
+() Tj
+T*
+(===== ARQUIVO: .github/workflows/deploy-infra.yml =====) Tj
+T*
+(\(arquivo não encontrado\)) Tj
+T*
+() Tj
+T*
+(===== ARQUIVO: .github/workflows/deploy-databricks.yml =====) Tj
+T*
+(\(arquivo não encontrado\)) Tj
+T*
+() Tj
+T*
+(===== ARQUIVO: .github/workflows/deploy-functions.yml =====) Tj
+T*
+(\(arquivo não encontrado\)) Tj
+ET
+endstream
+endobj
+19 0 obj
+<< /Type /Page /Parent 20 0 R /Resources << /Font << /F1 1 0 R >> >> /MediaBox [0 0 612 792] /Contents 18 0 R >>
+endobj
+20 0 obj
+<< /Type /Pages /Kids [ 3 0 R 5 0 R 7 0 R 9 0 R 11 0 R 13 0 R 15 0 R 17 0 R 19 0 R ] /Count 9 >>
+endobj
+21 0 obj
+<< /Type /Catalog /Pages 20 0 R >>
+endobj
+xref
+0 22
+0000000000 65535 f 
+0000000015 00000 n 
+0000000083 00000 n 
+0000002952 00000 n 
+0000003079 00000 n 
+0000005996 00000 n 
+0000006123 00000 n 
+0000007941 00000 n 
+0000008068 00000 n 
+0000010154 00000 n 
+0000010281 00000 n 
+0000012680 00000 n 
+0000012809 00000 n 
+0000015242 00000 n 
+0000015371 00000 n 
+0000017502 00000 n 
+0000017631 00000 n 
+0000019744 00000 n 
+0000019873 00000 n 
+0000021228 00000 n 
+0000021357 00000 n 
+0000021470 00000 n 
+trailer
+<< /Size 22 /Root 21 0 R >>
+startxref
+21521
+%%EOF
