@@ -1,14 +1,14 @@
-git status
 git add .
-git commit -m "Init AI_O11y_Custos"
-
-# garanta que a branch local se chame main
+git commit -m "init"
 git branch -M main
 
-# configure (ou confira) o remoto
+
+# se não tiver o gh instalado, instale pelo gerenciador da sua distro
+gh auth login -h github.com -p https -w    # faça login com o PAT (escopo: repo)
+gh auth setup-git                          # integra o gh ao Git (credential helper)
+
 git remote add origin https://github.com/mbenedicto99/AI_O11y_Custos.git 2>/dev/null || \
 git remote set-url origin https://github.com/mbenedicto99/AI_O11y_Custos.git
 
-# agora vai
 git push -u origin main
 
