@@ -1,0 +1,39 @@
+name: deploy-databricks
+on:
+  push:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "notebooks/**"
+      - "jobs/**"
+      - ".github/workflows/deploy-databricks.yml"
+jobs:
+  dbx:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with: { python-version: "3.11" }
+      - name: Setup Databricks CLI
+        run: |
+          pip install databricks-cli jq
+          mkdir -p ~/.databricks
+          cat > ~/.databrickscfg <<EOF
+          [DEFAULT]
+          host = ${{ secrets.DATABRICKS_HOST }}
+          token = ${{ secrets.DATABRICKS_TOKEN }}
+          EOF
+      - name: Sync notebooks to Repos
+        run: |
+          databricks repos create --url https://github.com/${{ github.repository }}.git --provider github --path /Repos/AI_O11y_Custos || true
+          databricks repos update --path /Repos/AI_O11y_Custos --branch main
+      - name: Create/Update Job
+        run: |
+          set -e
+          job_id=$(databricks jobs list --output JSON | jq -r '.jobs[] | select(.settings.name=="AI_O11y_Custos-train-daily") | .job_id' | head -n1)
+          if [ -n "$job_id" ] && [ "$job_id" != "null" ]; then
+            databricks jobs reset --job-id "$job_id" --json-file jobs/train_job.json
+          else
+            databricks jobs create --json-file jobs/train_job.json
+          fi

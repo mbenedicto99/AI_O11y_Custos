@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+.env
+.env.*
+
+# ML/Artifacts
+mlruns/
+models/
+.ipynb_checkpoints/
+
+# Data (não subir CSV/Parquet reais)
+data/
+*.csv
+*.parquet
+
+# Terraform
+**/.terraform/*
+*.tfstate*
+*.tfvars
+
+# IDE/OS
+.vscode/
+.idea/
+.DS_Store

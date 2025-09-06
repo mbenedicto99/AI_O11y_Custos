@@ -1,0 +1,26 @@
+{
+  "name": "AI_O11y_Custos-train-daily",
+  "tasks": [
+    {
+      "task_key": "train",
+      "notebook_task": {
+        "notebook_path": "/Repos/AI_O11y_Custos/notebooks/train_forecast.py"
+      },
+      "job_cluster_key": "c1"
+    }
+  ],
+  "job_clusters": [
+    {
+      "job_cluster_key": "c1",
+      "new_cluster": {
+        "spark_version": "13.3.x-scala2.12",
+        "node_type_id": "Standard_D4ds_v5",
+        "num_workers": 1
+      }
+    }
+  ],
+  "schedule": {
+    "quartz_cron_expression": "0 0 1 * * ?",
+    "timezone_id": "America/Sao_Paulo"
+  }
+}

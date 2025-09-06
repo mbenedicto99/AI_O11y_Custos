@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ai-o11y-custos"
+version = "0.1.0"
+description = "Probabilidade de desvios de orçamento Azure para SRE/FinOps"
+authors = [{ name = "AI_O11y_Custos" }]
+requires-python = ">=3.10"
+dependencies = []
+
+[tool.setuptools]
+packages = ["ai_o11y_custos"]
+package-dir = {"" = "src"}
