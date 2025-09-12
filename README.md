@@ -52,3 +52,32 @@ flowchart LR
   click AFN "https://learn.microsoft.com/azure/azure-functions/functions-overview" _blank
   click EGW "https://learn.microsoft.com/azure/event-grid/overview" _blank
 
+
+---
+
+## Instalação
+
+sudo apt update
+sudo apt install -y python3-venv python3-pip unzip jq
+# Terraform
+sudo apt install -y terraform || { curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo tee /usr/share/keyrings/hashicorp-archive-keyring.gpg >/dev/null \
+  && echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(. /etc/os-release && echo $UBUNTU_CODENAME) main" \
+  | sudo tee /etc/apt/sources.list.d/hashicorp.list >/dev/null \
+  && sudo apt update && sudo apt install -y terraform; }
+# Azure CLI
+curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+# Databricks CLI (v0.205+)
+pip install --upgrade databricks-cli
+
+---
+
+## 🔐 Segredos (GitHub Actions)
+
+Em Settings → Secrets and variables → Actions, crie:
+
+AZURE_CREDENTIALS → JSON do Service Principal (App Reg) com clientId, clientSecret, subscriptionId, tenantId.
+
+DATABRICKS_HOST → https://adb-<id>.<region>.azuredatabricks.net
+
+DATABRICKS_TOKEN → PAT do workspace.
+
