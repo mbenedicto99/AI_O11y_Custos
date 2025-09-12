@@ -11,6 +11,15 @@ Infra é criada via **Terraform**, execução de modelos via **Databricks Jobs**
 
 ---
 
+## Estrutura
+infra/               # Terraform (ADLS Gen2, Event Grid, Log Analytics, etc.)
+jobs/                # Definições de Jobs do Databricks (JSON)
+notebooks/           # Notebooks .py (treino/EDA)
+src/ai_o11y_custos/  # Lib Python + Azure Functions (Timer) para scoring
+.github/workflows/   # Pipelines CI/CD (Actions)
+
+---
+
 ## 🏗️ Arquitetura
 
 ```mermaid
